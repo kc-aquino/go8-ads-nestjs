@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
+import { UserRole } from '../users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -25,7 +26,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { username: user.username, sub: user.id };
+    const payload = { username: user.username, sub: user.id , role: user.role };
+    // Check if the user is an admin
+    if (user.role !== UserRole.ADMIN) {
+      throw new UnauthorizedException('Only admins are allowed to log in');
+    }
     return {
       access_token: this.jwtService.sign(payload),
     };
